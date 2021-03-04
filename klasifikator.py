@@ -30,22 +30,24 @@ def statistika(razredi):
  return np.asarray(povp_razred), np.asarray(std_razred), np.asarray(velikost_razredov)
 
 def gaussova_porazdelitev(x, povp, std):
- gauss = (1/std * np.sqrt(2*np.pi))*np.exp(-1/2*((x - povp)/std)**2)
+ gauss = (1/(std * np.sqrt(2*np.pi)))*np.exp(-1/2*((x - povp)/std)**2)
  return gauss
 
 def verjetnost_pripadnosti_posameznemu_razredu(podatki, podatki_test, st_razredov):
  povp_razred, std_razred, velikost_razredov = statistika(sortiraj_po_razredih(podatki, 2))
- velikost_podatkov = len(podatki_test)
- for x in podatki:
+ podatki = np.asarray(podatki)
+ vrste, stolpci = podatki.shape
+ velikost_podatkov = vrste
+ for x in podatki_test:
   vse_verjetnosti = []
   for a in range(st_razredov):
    pojavnost_razreda = velikost_razredov[a] / velikost_podatkov
    verjetnost = pojavnost_razreda
    for b in range(len(x)-1):
-    verjetnost = verjetnost * gaussova_porazdelitev(b, povp_razred[a][b], std_razred[a][b])
+    verjetnost = verjetnost * gaussova_porazdelitev(x[b], povp_razred[a][b], std_razred[a][b])
    vse_verjetnosti.append(verjetnost)
   return vse_verjetnosti
 
 for i in range(len(dataset)):
- print(verjetnost_pripadnosti_posameznemu_razredu(dataset, dataset[i], 2))
+ print(verjetnost_pripadnosti_posameznemu_razredu(dataset, [dataset[i]], 2))
 
