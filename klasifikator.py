@@ -13,16 +13,17 @@ dataset = [[3.393533211,2.331273381,0],
 
 # razredi od 0 do N, če so drugačni se jih prej prevede s slovarjem
 def sortiraj_po_razredih(podatki, st_razredov):
-  razredi = [[] for razred in range(st_razredov)]
-  for podatek in podatki:
-   razredi[podatek[-1]].append(podatek[:-1])
-  return np.asarray(razredi)
+ razredi = [[] for razred in range(st_razredov)]
+ for podatek in podatki:
+  razredi[podatek[-1]].append(podatek)
+ return razredi
 
 def statistika(razredi):
  povp_razred = []
  std_razred = []
  velikost_razredov = []
  for razred in razredi:
+  razred = np.array(np.stack(razred,axis=0), dtype=np.float64)
   povp_razred.append(np.average(razred, axis=0))
   std_razred.append(np.std(razred, axis=0, ddof=1))
   velikost_razredov.append(len(razred))
@@ -33,21 +34,16 @@ def gaussova_porazdelitev(x, povp, std):
  gauss = (1/(std * np.sqrt(2*np.pi)))*np.exp(-1/2*((x - povp)/std)**2)
  return gauss
 
-def verjetnost_pripadnosti_posameznemu_razredu(podatki, podatki_test, st_razredov):
- povp_razred, std_razred, velikost_razredov = statistika(sortiraj_po_razredih(podatki, 2))
- podatki = np.asarray(podatki)
- vrste, stolpci = podatki.shape
- velikost_podatkov = vrste
- for x in podatki_test:
-  vse_verjetnosti = []
-  for a in range(st_razredov):
-   pojavnost_razreda = velikost_razredov[a] / velikost_podatkov
-   verjetnost = pojavnost_razreda
-   for b in range(len(x)-1):
-    verjetnost = verjetnost * gaussova_porazdelitev(x[b], povp_razred[a][b], std_razred[a][b])
-   vse_verjetnosti.append(verjetnost)
-  return vse_verjetnosti
+def razvrsti(podatek_test, st_razredov, povp_razred, std_razred, velikost_razredov):
+ velikost_podatkov = np.sum(velikost_razredov)
+ vse_verjetnosti = []
+ for a in range(st_razredov):
+  pojavnost_razreda = velikost_razredov[a] / velikost_podatkov
+  verjetnost = pojavnost_razreda
+  for b in range(len(podatek_test)-1):
+   verjetnost = verjetnost * gaussova_porazdelitev(podatek_test[b], povp_razred[a][b], std_razred[a][b])
+  vse_verjetnosti.append(verjetnost)
+ return vse_verjetnosti
 
-for i in range(len(dataset)):
- print(verjetnost_pripadnosti_posameznemu_razredu(dataset, [dataset[i]], 2))
+
 
